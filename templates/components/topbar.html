@@ -1,0 +1,46 @@
+{% load static %}
+<header class="dashboard-topbar">
+    <div class="d-flex align-items-center gap-3">
+        <button class="sidebar-mobile-toggle" id="sidebarToggle" type="button">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="topbar-welcome">
+            <h4>Good {% if now.hour < 12 %}morning{% elif now.hour < 17 %}afternoon{% else %}evening{% endif %}, {{ user.first_name|default:user.username }} 👋</h4>
+            <p>Here's what's happening in your store today.</p>
+        </div>
+    </div>
+
+    <div class="topbar-actions">
+        <div class="search-box-custom">
+            <i class="fas fa-magnifying-glass"></i>
+            <input type="text" id="globalSearchInput" class="form-control-custom" placeholder="Search products, SKU...">
+        </div>
+
+        <a href="{% url 'products:low_stock_alert' %}" class="topbar-icon-btn" title="Stock Alerts">
+            <i class="fas fa-bell"></i>
+            {% if stats.low_stock_products > 0 %}
+                <span class="notification-dot"></span>
+            {% endif %}
+        </a>
+
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center gap-2 text-decoration-none dropdown-toggle" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <div class="user-avatar">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <div class="d-none d-md-block text-start">
+                    <div class="fw-bold text-dark fs-6 line-height-1">{{ user.get_full_name|default:user.username }}</div>
+                    <small class="text-muted text-capitalize">{{ user.userprofile.role }}</small>
+                </div>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenuDropdown">
+                <li><a class="dropdown-item py-2" href="{% url 'authentication:profile' %}"><i class="fas fa-user-circle me-2 text-muted"></i> Profile</a></li>
+                {% if user.userprofile.is_admin %}
+                <li><a class="dropdown-item py-2" href="{% url 'authentication:manage_users' %}"><i class="fas fa-users me-2 text-muted"></i> Manage Staff</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item py-2 text-danger" href="{% url 'authentication:logout' %}"><i class="fas fa-sign-out-alt me-2"></i> Sign Out</a></li>
+            </ul>
+        </div>
+    </div>
+</header>

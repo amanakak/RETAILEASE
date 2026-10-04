@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Users - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users me-2"></i>Manage Users</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createUserModal">
+        <i class="fas fa-plus me-1"></i>Add New User
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Joined</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user_obj in users %}
+                    <tr>
+                        <td><strong>{{ user_obj.username }}</strong></td>
+                        <td>{{ user_obj.get_full_name|default:"-" }}</td>
+                        <td>{{ user_obj.email|default:"-" }}</td>
+                        <td>
+                            <span class="badge bg-{% if user_obj.userprofile.is_admin %}danger{% else %}info{% endif %}">
+                                {{ user_obj.userprofile.get_role_display }}
+                            </span>
+                        </td>
+                        <td>{{ user_obj.userprofile.phone|default:"-" }}</td>
+                        <td>
+                            {% if user_obj.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user_obj.date_joined|date:"M d, Y" }}</td>
+                        <td>
+                            {% if user_obj != user %}
+                                <button type="button" class="btn btn-sm btn-warning" 
+                                        onclick="toggleUserStatus({{ user_obj.id }}, '{{ user_obj.username }}')">
+                                    {% if user_obj.is_active %}
+                                        <i class="fas fa-ban"></i>
+                                    {% else %}
+                                        <i class="fas fa-check"></i>
+                                    {% endif %}
+                                </button>
+                            {% else %}
+                                <span class="text-muted">Current User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center text-muted">No users found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create User Modal -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create_user">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New User</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">Username *</label>
+                                <input type="text" class="form-control" name="username" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" name="password" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" name="first_name">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" name="last_name">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="role" class="form-label">Role *</label>
+                                <select class="form-select" name="role" required>
+                                    <option value="staff">Staff</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone</label>
+                                <input type="text" class="form-control" name="phone">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <textarea class="form-control" name="address" rows="2"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

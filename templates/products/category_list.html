@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tags me-2"></i>Product Categories</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+        <i class="fas fa-plus me-1"></i>Add Category
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Products</th>
+                        <th>Total Stock</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td><strong>{{ category.name }}</strong></td>
+                        <td>{{ category.description|default:"-" }}</td>
+                        <td>
+                            <span class="badge bg-primary">{{ category.products.count }}</span>
+                        </td>
+                        <td>{{ category.product_count|default:0 }}</td>
+                        <td>{{ category.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center text-muted">No categories found</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="create">
+                
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Create Category
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

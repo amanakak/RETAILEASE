@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard - RetailEase{% endblock %}
+
+{% block content %}
+<!-- Quick Actions Bar -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <span class="tc-section-tag">ADMIN OVERVIEW</span>
+        <h2 class="mb-1">Store Dashboard</h2>
+    </div>
+
+    <div class="quick-actions-bar">
+        <a href="{% url 'sales:sale_create' %}" class="btn-pill btn-dark-pill">
+            <i class="fas fa-cart-plus me-1"></i> New Sale (POS)
+        </a>
+        <a href="{% url 'products:product_create' %}" class="btn-pill btn-outline-pill">
+            <i class="fas fa-plus me-1"></i> Add Product
+        </a>
+        <a href="{% url 'expenses:expense_create' %}" class="btn-pill btn-outline-pill">
+            <i class="fas fa-receipt me-1"></i> Add Expense
+        </a>
+        <a href="{% url 'suppliers:supplier_create' %}" class="btn-pill btn-outline-pill">
+            <i class="fas fa-truck me-1"></i> Add Supplier
+        </a>
+        <a href="{% url 'dashboard:reports' %}" class="btn-pill btn-soft-pill">
+            <i class="fas fa-file-chart-column me-1"></i> View Reports
+        </a>
+    </div>
+</div>
+
+<!-- Primary KPI Metrics Grid -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Today's Sales</span>
+            <div class="kpi-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+        </div>
+        <div class="kpi-value">₹{{ sales_stats.today_sales|floatformat:2 }}</div>
+        <div class="kpi-subtext"><i class="fas fa-arrow-trend-up text-success me-1"></i> {{ sales_stats.today_transactions }} sales completed today</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Today's Orders</span>
+            <div class="kpi-icon"><i class="fas fa-shopping-bag"></i></div>
+        </div>
+        <div class="kpi-value">{{ sales_stats.today_transactions }}</div>
+        <div class="kpi-subtext">Total transactions recorded</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Total Products</span>
+            <div class="kpi-icon"><i class="fas fa-boxes-stacked"></i></div>
+        </div>
+        <div class="kpi-value">{{ stats.total_products }}</div>
+        <div class="kpi-subtext">Across {{ stats.total_categories }} categories</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Low Stock Alerts</span>
+            <div class="kpi-icon {% if stats.low_stock_products > 0 %}text-danger{% endif %}"><i class="fas fa-triangle-exclamation"></i></div>
+        </div>
+        <div class="kpi-value {% if stats.low_stock_products > 0 %}text-danger{% endif %}">{{ stats.low_stock_products }}</div>
+        <div class="kpi-subtext">
+            {% if stats.low_stock_products > 0 %}
+                <span class="tc-badge tc-badge-danger">Action needed</span>
+            {% else %}
+                <span class="tc-badge tc-badge-success">Stock healthy</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Financial Metrics Grid -->
+<div class="kpi-grid-secondary">
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Monthly Expenses</span>
+            <div class="kpi-icon text-danger"><i class="fas fa-wallet"></i></div>
+        </div>
+        <div class="kpi-value fs-3">₹{{ expense_stats.monthly_expenses|floatformat:2 }}</div>
+        <div class="kpi-subtext">Operating costs this month</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Estimated Monthly Profit</span>
+            <div class="kpi-icon text-success"><i class="fas fa-chart-line"></i></div>
+        </div>
+        <div class="kpi-value fs-3 {% if expense_stats.monthly_profit < 0 %}text-danger{% else %}text-success{% endif %}">
+            ₹{{ expense_stats.monthly_profit|floatformat:2 }}
+        </div>
+        <div class="kpi-subtext">Sales minus expenses</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Inventory Valuation</span>
+            <div class="kpi-icon"><i class="fas fa-vault"></i></div>
+        </div>
+        <div class="kpi-value fs-3">₹{{ stats.inventory_value|floatformat:2 }}</div>
+        <div class="kpi-subtext">Total active inventory retail value</div>
+    </div>
+</div>
+
+<!-- Charts Grid -->
+<div class="charts-grid">
+    <!-- Main Revenue Overview Chart -->
+    <div class="tc-card">
+        <div class="chart-card-header">
+            <div>
+                <span class="tc-section-tag mb-0">ANALYTICS VELOCITY</span>
+                <h4 class="mb-0">Revenue Overview</h4>
+            </div>
+            <div class="chart-filters">
+                <button type="button" class="chart-filter-btn active">7 Days</button>
+                <button type="button" class="chart-filter-btn">30 Days</button>
+                <button type="button" class="chart-filter-btn">Monthly</button>
+            </div>
+        </div>
+        <div style="height: 280px; position: relative;">
+            <canvas id="adminSalesChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Payment Methods Breakdown -->
+    <div class="tc-card">
+        <div class="chart-card-header mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">TRANSACTIONS</span>
+                <h4 class="mb-0">Payment Breakdown</h4>
+            </div>
+        </div>
+
+        {% if payment_breakdown %}
+            {% for pm in payment_breakdown %}
+            <div class="payment-method-item">
+                <div class="pm-info">
+                    <span><i class="fas {% if pm.method == 'CASH' %}fa-money-bill-wave text-success{% elif pm.method == 'CARD' %}fa-credit-card text-primary{% elif pm.method == 'UPI' %}fa-mobile-screen text-warning{% else %}fa-handshake text-info{% endif %} me-2"></i> {{ pm.method }}</span>
+                    <span>₹{{ pm.total|floatformat:2 }} ({{ pm.percentage }}%)</span>
+                </div>
+                <div class="pm-progress">
+                    <div class="pm-bar" style="width: {{ pm.percentage }}%;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-4 text-muted">
+                <i class="fas fa-receipt fs-2 mb-2 d-block opacity-50"></i>
+                No payment data for this month yet.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Inventory Alerts & Top Products Row -->
+<div class="tables-grid">
+    <!-- Low Stock Inventory Alerts -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">STOCK WARNINGS</span>
+                <h4 class="mb-0">Low Stock Inventory Alerts</h4>
+            </div>
+            <a href="{% url 'products:low_stock_alert' %}" class="btn-pill btn-outline-pill btn-sm-pill">View All</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in low_stock_products %}
+                    <tr>
+                        <td class="fw-bold">{{ item.name }}</td>
+                        <td class="text-muted small">{{ item.sku }}</td>
+                        <td><span class="fw-bold text-danger">{{ item.stock_quantity }} {{ item.unit }}</span></td>
+                        <td>
+                            {% if item.stock_quantity == 0 %}
+                                <span class="tc-badge tc-badge-danger">Out of Stock</span>
+                            {% else %}
+                                <span class="tc-badge tc-badge-warning">Low Stock</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="fas fa-circle-check text-success fs-3 mb-2 d-block"></i>
+                            All inventory stock levels are healthy!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Top Selling Products -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">PERFORMANCE</span>
+                <h4 class="mb-0">Top Selling Products (30 Days)</h4>
+            </div>
+            <a href="{% url 'products:product_list' %}" class="btn-pill btn-outline-pill btn-sm-pill">Products Catalog</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Qty Sold</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for prod in top_products %}
+                    <tr>
+                        <td class="fw-bold">{{ prod.product__name }}</td>
+                        <td class="text-muted small">{{ prod.product__category__name|default:"General" }}</td>
+                        <td><span class="fw-bold">{{ prod.total_quantity }}</span></td>
+                        <td class="fw-bold">₹{{ prod.total_revenue|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            No sales recorded in the last 30 days.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Transactions & Recent Expenses Row -->
+<div class="tables-grid">
+    <!-- Recent Transactions -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">RECENT ACTIVITY</span>
+                <h4 class="mb-0">Recent Sales Transactions</h4>
+            </div>
+            <a href="{% url 'sales:sale_list' %}" class="btn-pill btn-outline-pill btn-sm-pill">View All Sales</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Sale ID</th>
+                        <th>Customer</th>
+                        <th>Amount</th>
+                        <th>Payment</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td class="fw-bold text-dark">{{ sale.sale_number }}</td>
+                        <td>{{ sale.customer_name|default:"Walk-in Customer" }}</td>
+                        <td class="fw-bold text-dark">₹{{ sale.total_amount|floatformat:2 }}</td>
+                        <td>
+                            <span class="tc-badge tc-badge-neutral text-uppercase">{{ sale.payment_method }}</span>
+                        </td>
+                        <td class="text-muted small">{{ sale.created_at|date:"M d, H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No transactions found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Recent Expenses -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">STORE EXPENSES</span>
+                <h4 class="mb-0">Recent Store Expenses</h4>
+            </div>
+            <a href="{% url 'expenses:expense_list' %}" class="btn-pill btn-outline-pill btn-sm-pill">Manage Expenses</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Title / Category</th>
+                        <th>Vendor</th>
+                        <th>Amount</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for exp in recent_expenses %}
+                    <tr>
+                        <td class="fw-bold">
+                            <div>{{ exp.title }}</div>
+                            <small class="text-muted font-normal">{{ exp.category.name }}</small>
+                        </td>
+                        <td class="text-muted small">{{ exp.vendor|default:"-" }}</td>
+                        <td class="fw-bold text-danger">₹{{ exp.amount|floatformat:2 }}</td>
+                        <td class="text-muted small">{{ exp.expense_date|date:"M d, Y" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">No expenses recorded recently.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Render Admin Sales Velocity Line Chart
+    const chartData = {{ chart_data|safe }};
+    initSalesChart('adminSalesChart', chartData);
+});
+</script>
+{% endblock %}

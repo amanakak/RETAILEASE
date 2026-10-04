@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if expense %}Edit Expense{% else %}Add Expense{% endif %} - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-receipt me-2"></i>
+        {% if expense %}Edit Expense: {{ expense.title }}{% else %}Add New Expense{% endif %}
+    </h2>
+    <a href="{% url 'expenses:expense_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Expenses
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="title" class="form-label">Expense Title *</label>
+                    <input type="text" class="form-control" id="title" name="title" value="{{ expense.title|default:'' }}" required placeholder="e.g., Electricity Bill, Store Rent">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="category" class="form-label">Category *</label>
+                    <select class="form-select" id="category" name="category" required>
+                        <option value="">Select Category</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if expense.category_id == cat.id %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="amount" class="form-label">Amount (₹) *</label>
+                    <input type="number" step="0.01" class="form-control" id="amount" name="amount" value="{{ expense.amount|default:'' }}" required placeholder="0.00">
+                </div>
+
+                <div class="col-md-4">
+                    <label for="expense_date" class="form-label">Expense Date *</label>
+                    <input type="date" class="form-control" id="expense_date" name="expense_date" value="{{ expense.expense_date|date:'Y-m-d'|default:'' }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="payment_method" class="form-label">Payment Method *</label>
+                    <select class="form-select" id="payment_method" name="payment_method" required>
+                        <option value="cash" {% if expense.payment_method == 'cash' %}selected{% endif %}>Cash</option>
+                        <option value="card" {% if expense.payment_method == 'card' %}selected{% endif %}>Card</option>
+                        <option value="bank_transfer" {% if expense.payment_method == 'bank_transfer' %}selected{% endif %}>Bank Transfer</option>
+                        <option value="cheque" {% if expense.payment_method == 'cheque' %}selected{% endif %}>Cheque</option>
+                        <option value="upi" {% if expense.payment_method == 'upi' %}selected{% endif %}>UPI</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label for="vendor_name" class="form-label">Vendor / Payee Name</label>
+                    <input type="text" class="form-control" id="vendor_name" name="vendor_name" value="{{ expense.vendor_name|default:'' }}" placeholder="Vendor or Payee Name">
+                </div>
+
+                <div class="col-md-6">
+                    <label for="receipt_number" class="form-label">Receipt / Bill Number</label>
+                    <input type="text" class="form-control" id="receipt_number" name="receipt_number" value="{{ expense.receipt_number|default:'' }}" placeholder="e.g. INV-10023">
+                </div>
+
+                <div class="col-12">
+                    <label for="description" class="form-label">Description / Remarks</label>
+                    <textarea class="form-control" id="description" name="description" rows="3">{{ expense.description|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a href="{% url 'expenses:expense_list' %}" class="btn btn-light">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save me-1"></i>{% if expense %}Update Expense{% else %}Save Expense{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - RetailEase{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-row {
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+    <div class="text-muted">
+        Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row stats-row">
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card products">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ stats.total_products }}</h3>
+                    <p>Total Products</p>
+                </div>
+                <i class="fas fa-box fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card sales">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>₹{{ sales_stats.today_sales|floatformat:2 }}</h3>
+                    <p>Today's Sales</p>
+                </div>
+                <i class="fas fa-cash-register fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card expenses">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ stats.low_stock_products }}</h3>
+                    <p>Low Stock Items</p>
+                </div>
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 col-sm-6">
+        <div class="stats-card profit">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3>{{ sales_stats.today_transactions }}</h3>
+                    <p>Today's Orders</p>
+                </div>
+                <i class="fas fa-chart-line fa-2x"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Statistics -->
+{% if user.userprofile.is_admin %}
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-calendar-day me-1"></i>Today's Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h5 class="text-success">₹{{ sales_stats.today_sales|floatformat:2 }}</h5>
+                        <small class="text-muted">Sales</small>
+                    </div>
+                    <div class="col-6">
+                        <h5 class="text-danger">₹{{ expense_stats.today_expenses|floatformat:2 }}</h5>
+                        <small class="text-muted">Expenses</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-calendar-alt me-1"></i>Monthly Summary</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-12 mb-2">
+                        <h5 class="text-primary">₹{{ expense_stats.monthly_profit|floatformat:2 }}</h5>
+                        <small class="text-muted">Net Profit</small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-success">Sales: ₹{{ sales_stats.monthly_sales|floatformat:2 }}</small>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-danger">Expenses: ₹{{ expense_stats.monthly_expenses|floatformat:2 }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle me-1"></i>System Info</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h6>{{ stats.total_suppliers }}</h6>
+                        <small class="text-muted">Suppliers</small>
+                    </div>
+                    <div class="col-6">
+                        <h6>{{ stats.total_categories }}</h6>
+                        <small class="text-muted">Categories</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Charts and Lists -->
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-line me-1"></i>Sales Trend (Last 7 Days)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Low Stock Alert -->
+        {% if low_stock_products %}
+        <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="fas fa-exclamation-triangle me-1"></i>Low Stock Alert</h6>
+            </div>
+            <div class="card-body">
+                {% for product in low_stock_products|slice:":5" %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ product.name }}</strong><br>
+                        <small class="text-muted">Stock: {{ product.stock_quantity }} {{ product.unit }}</small>
+                    </div>
+                    <span class="badge bg-warning">Low</span>
+                </div>
+                {% if not forloop.last %}<hr class="my-2">{% endif %}
+                {% endfor %}
+                
+                {% if low_stock_products|length > 5 %}
+                <div class="text-center mt-3">
+                    <a href="{% url 'products:low_stock_alert' %}" class="btn btn-sm btn-warning">
+                        View All ({{ low_stock_products|length }})
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Recent Sales -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-receipt me-1"></i>Recent Sales</h6>
+            </div>
+            <div class="card-body">
+                {% for sale in recent_sales %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ sale.sale_number }}</strong><br>
+                        <small class="text-muted">{{ sale.customer_name|default:"Walk-in Customer" }}</small>
+                    </div>
+                    <div class="text-end">
+                        <strong>₹{{ sale.total_amount }}</strong><br>
+                        <small class="text-muted">{{ sale.created_at|date:"M d, H:i" }}</small>
+                    </div>
+                </div>
+                {% if not forloop.last %}<hr class="my-2">{% endif %}
+                {% empty %}
+                <p class="text-muted text-center">No recent sales</p>
+                {% endfor %}
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'sales:sale_list' %}" class="btn btn-sm btn-primary">
+                        View All Sales
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Products and Categories -->
+{% if user.userprofile.is_admin %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-star me-1"></i>Top Selling Products (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                {% for product in top_products %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ product.product__name }}</strong><br>
+                        <small class="text-muted">Qty: {{ product.total_quantity }}</small>
+                    </div>
+                    <div class="text-end">
+                        <strong>₹{{ product.total_revenue|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                {% if not forloop.last %}<hr class="my-2">{% endif %}
+                {% empty %}
+                <p class="text-muted text-center">No sales data available</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-tags me-1"></i>Category Performance (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                {% for category in category_sales %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <strong>{{ category.product__category__name }}</strong>
+                    </div>
+                    <div class="text-end">
+                        <strong>₹{{ category.total_revenue|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                {% if not forloop.last %}<hr class="my-2">{% endif %}
+                {% empty %}
+                <p class="text-muted text-center">No sales data available</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-bolt me-1"></i>Quick Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'sales:sale_create' %}" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-1"></i>New Sale
+                        </a>
+                    </div>
+                    
+                    {% if user.userprofile.is_admin %}
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'products:product_create' %}" class="btn btn-success w-100">
+                            <i class="fas fa-box me-1"></i>Add Product
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'expenses:expense_create' %}" class="btn btn-warning w-100">
+                            <i class="fas fa-receipt me-1"></i>Add Expense
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'dashboard:reports' %}" class="btn btn-info w-100">
+                            <i class="fas fa-chart-bar me-1"></i>View Reports
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'products:product_list' %}" class="btn btn-success w-100">
+                            <i class="fas fa-search me-1"></i>Search Products
+                        </a>
+                    </div>
+                    
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <a href="{% url 'sales:daily_sales' %}" class="btn btn-info w-100">
+                            <i class="fas fa-calendar-day me-1"></i>Daily Sales
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart data from backend
+    const chartData = {{ chart_data|safe }};
+    
+    // Initialize dashboard chart
+    document.addEventListener('DOMContentLoaded', function() {
+        initDashboardChart();
+    });
+</script>
+{% endblock %}

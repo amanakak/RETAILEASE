@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Staff Dashboard - RetailEase POS & Sales{% endblock %}
+
+{% block content %}
+<!-- Staff Header & Primary POS Call to Action -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <span class="tc-section-tag">STAFF TERMINAL</span>
+        <h2 class="mb-1">Sales & POS Dashboard</h2>
+    </div>
+
+    <div>
+        <a href="{% url 'sales:sale_create' %}" class="btn-pill btn-dark-pill btn-lg-pill shadow-sm">
+            <i class="fas fa-cash-register me-2"></i> Start New Sale (POS)
+        </a>
+    </div>
+</div>
+
+<!-- Primary Staff Metrics Grid -->
+<div class="kpi-grid">
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Today's Store Sales</span>
+            <div class="kpi-icon"><i class="fas fa-indian-rupee-sign"></i></div>
+        </div>
+        <div class="kpi-value">₹{{ sales_stats.today_sales|floatformat:2 }}</div>
+        <div class="kpi-subtext"><i class="fas fa-receipt me-1"></i> Total sales processed today</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Today's Transactions</span>
+            <div class="kpi-icon"><i class="fas fa-shopping-bag"></i></div>
+        </div>
+        <div class="kpi-value">{{ sales_stats.today_transactions }}</div>
+        <div class="kpi-subtext">Completed orders</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Products Available</span>
+            <div class="kpi-icon"><i class="fas fa-boxes-stacked"></i></div>
+        </div>
+        <div class="kpi-value">{{ stats.total_products }}</div>
+        <div class="kpi-subtext">Active items in catalog</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Low Stock Items</span>
+            <div class="kpi-icon {% if stats.low_stock_products > 0 %}text-danger{% endif %}"><i class="fas fa-triangle-exclamation"></i></div>
+        </div>
+        <div class="kpi-value {% if stats.low_stock_products > 0 %}text-danger{% endif %}">{{ stats.low_stock_products }}</div>
+        <div class="kpi-subtext">
+            {% if stats.low_stock_products > 0 %}
+                <span class="tc-badge tc-badge-warning">Check stock</span>
+            {% else %}
+                <span class="tc-badge tc-badge-success">Stock full</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Main Sales Velocity Chart -->
+<div class="tc-card mb-4">
+    <div class="chart-card-header mb-3">
+        <div>
+            <span class="tc-section-tag mb-0">STORE REVENUE</span>
+            <h4 class="mb-0">Daily Sales Velocity (Last 7 Days)</h4>
+        </div>
+    </div>
+    <div style="height: 240px; position: relative;">
+        <canvas id="staffSalesChart"></canvas>
+    </div>
+</div>
+
+<!-- Tables Grid for Staff -->
+<div class="tables-grid">
+    <!-- Recent Sales Table -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">MY RECENT SALES</span>
+                <h4 class="mb-0">Recent Transactions</h4>
+            </div>
+            <a href="{% url 'sales:sale_list' %}" class="btn-pill btn-outline-pill btn-sm-pill">All Sales</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Sale ID</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Payment</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sale in recent_sales %}
+                    <tr>
+                        <td class="fw-bold">{{ sale.sale_number }}</td>
+                        <td>{{ sale.customer_name|default:"Walk-in Customer" }}</td>
+                        <td class="fw-bold text-dark">₹{{ sale.total_amount|floatformat:2 }}</td>
+                        <td><span class="tc-badge tc-badge-neutral text-uppercase">{{ sale.payment_method }}</span></td>
+                        <td class="text-muted small">{{ sale.created_at|date:"H:i" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No sales processed today yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Low Stock Inventory Alerts -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">INVENTORY NOTICE</span>
+                <h4 class="mb-0">Low Stock Products</h4>
+            </div>
+            <a href="{% url 'products:low_stock_alert' %}" class="btn-pill btn-outline-pill btn-sm-pill">View All Alerts</a>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>SKU</th>
+                        <th>Remaining Stock</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in low_stock_products %}
+                    <tr>
+                        <td class="fw-bold">{{ item.name }}</td>
+                        <td class="text-muted small">{{ item.sku }}</td>
+                        <td><span class="fw-bold text-danger">{{ item.stock_quantity }} {{ item.unit }}</span></td>
+                        <td>
+                            {% if item.stock_quantity == 0 %}
+                                <span class="tc-badge tc-badge-danger">Out of Stock</span>
+                            {% else %}
+                                <span class="tc-badge tc-badge-warning">Low Stock</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="fas fa-check-circle text-success fs-3 mb-2 d-block"></i>
+                            No low stock items!
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chartData = {{ chart_data|safe }};
+    initSalesChart('staffSalesChart', chartData);
+});
+</script>
+{% endblock %}

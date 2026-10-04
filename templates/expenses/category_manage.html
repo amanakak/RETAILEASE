@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}Expense Categories - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tags me-2"></i>Expense Categories</h2>
+    <a href="{% url 'expenses:expense_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Expenses
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-plus-circle me-2"></i>Add Category</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="create">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Category Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required placeholder="e.g. Utilities, Rent">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" placeholder="Brief description..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-save me-1"></i>Create Category
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>Category Name</th>
+                                <th>Description</th>
+                                <th>Total Expenses</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in categories %}
+                            <tr>
+                                <td><strong>{{ cat.name }}</strong></td>
+                                <td><span class="text-muted">{{ cat.description|default:"-" }}</span></td>
+                                <td><span class="badge bg-success fs-6">₹{{ cat.total_expenses|default:0|floatformat:2 }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-4">No categories created yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

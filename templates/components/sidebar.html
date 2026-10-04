@@ -1,0 +1,125 @@
+{% load static %}
+<aside class="sidebar">
+    <div>
+        <div class="sidebar-header">
+            <a href="{% url 'home' %}" class="brand-slash-logo">
+                /RETAILEASE
+            </a>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li class="sidebar-label">Main Menu</li>
+            <li class="sidebar-item">
+                <a href="{% url 'dashboard:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fas fa-chart-pie"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            
+            {% if not user.userprofile.is_admin %}
+            <li class="sidebar-item">
+                <a href="{% url 'sales:sale_create' %}" class="sidebar-link {% if request.resolver_match.url_name == 'sale_create' %}active{% endif %}">
+                    <i class="fas fa-cash-register"></i>
+                    <span>Point of Sale (POS)</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="sidebar-item">
+                <a href="{% url 'products:product_list' %}" class="sidebar-link {% if 'product' in request.resolver_match.url_name and request.resolver_match.url_name != 'category_list' and request.resolver_match.url_name != 'low_stock_alert' %}active{% endif %}">
+                    <i class="fas fa-box-archive"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+
+            {% if user.userprofile.is_admin %}
+            <li class="sidebar-item">
+                <a href="{% url 'products:category_list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}">
+                    <i class="fas fa-layer-group"></i>
+                    <span>Categories</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="sidebar-item">
+                <a href="{% url 'products:low_stock_alert' %}" class="sidebar-link {% if request.resolver_match.url_name == 'low_stock_alert' %}active{% endif %}">
+                    <i class="fas fa-triangle-exclamation"></i>
+                    <span>Inventory Alerts</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a href="{% url 'sales:sale_list' %}" class="sidebar-link {% if 'sale' in request.resolver_match.url_name and request.resolver_match.url_name != 'sale_create' %}active{% endif %}">
+                    <i class="fas fa-receipt"></i>
+                    <span>Sales History</span>
+                </a>
+            </li>
+
+            {% if user.userprofile.is_admin %}
+            <li class="sidebar-label">Management</li>
+            
+            <li class="sidebar-item">
+                <a href="{% url 'suppliers:supplier_list' %}" class="sidebar-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-truck-field"></i>
+                    <span>Suppliers</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a href="{% url 'expenses:expense_list' %}" class="sidebar-link {% if 'expense' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-wallet"></i>
+                    <span>Expenses</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a href="{% url 'dashboard:reports' %}" class="sidebar-link {% if request.resolver_match.url_name == 'reports' or request.resolver_match.url_name == 'analytics' %}active{% endif %}">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports & Analytics</span>
+                </a>
+            </li>
+
+            <li class="sidebar-item">
+                <a href="{% url 'authentication:manage_users' %}" class="sidebar-link {% if request.resolver_match.url_name == 'manage_users' %}active{% endif %}">
+                    <i class="fas fa-users-gear"></i>
+                    <span>Staff & Users</span>
+                </a>
+            </li>
+            <li class="sidebar-item">
+                <a href="{% url 'dashboard:customer_list' %}" class="sidebar-link {% if 'customer' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fas fa-user-group"></i>
+                    <span>Customers</span>
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="sidebar-label">Account</li>
+            <li class="sidebar-item">
+                <a href="{% url 'authentication:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                    <i class="fas fa-user-gear"></i>
+                    <span>Profile Settings</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-user-card mb-2">
+            <div class="user-avatar">
+                {{ user.username|slice:":1"|upper }}
+            </div>
+            <div class="user-info">
+                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                <div class="user-role-badge">
+                    <span class="tc-badge {% if user.userprofile.is_admin %}tc-badge-success{% else %}tc-badge-neutral{% endif %}">
+                        {{ user.userprofile.get_role_display }}
+                    </span>
+                </div>
+            </div>
+        </div>
+        <a href="{% url 'authentication:logout' %}" class="sidebar-link text-danger">
+            <i class="fas fa-arrow-right-from-bracket"></i>
+            <span>Sign Out</span>
+        </a>
+    </div>
+</aside>

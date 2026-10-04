@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block title %}New Sale - RetailEase{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cash-register me-2"></i>New Sale</h2>
+    <a href="{% url 'sales:sale_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Sales
+    </a>
+</div>
+
+<form method="post" onsubmit="return validateSaleForm()">
+    {% csrf_token %}
+    
+    <div class="row">
+        <!-- Customer Information -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6><i class="fas fa-user me-1"></i>Customer Information</h6>
+                </div>
+                <div class="card-body">
+                    <input type="hidden" id="customer_id" name="customer_id">
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <button type="button" class="btn btn-outline-primary active" onclick="showCustomerMode('search', this)">Search customer</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="showCustomerMode('new', this)">New customer</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="showCustomerMode('guest', this)">Guest</button>
+                    </div>
+                    <div id="customerSearchMode">
+                        <input type="search" class="form-control mb-2" id="customerSearch" placeholder="Search name, phone, or email...">
+                        <div id="customerSearchResults" class="list-group"></div>
+                        <div id="selectedCustomer" class="alert alert-success py-2 d-none"></div>
+                    </div>
+                    <div id="newCustomerMode" class="d-none">
+                        <input type="text" class="form-control mb-2" id="customer_name" name="customer_name" placeholder="Customer name">
+                        <input type="text" class="form-control mb-2" id="customer_phone" name="customer_phone" placeholder="Phone">
+                        <input type="email" class="form-control mb-2" id="customer_email" name="customer_email" placeholder="Email">
+                    </div>
+                    <div id="guestCustomerMode" class="d-none"><p class="text-muted mb-0">Guest checkout does not earn or use loyalty points.</p></div>
+                </div>
+            </div>
+            
+            <!-- Payment Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-credit-card me-1"></i>Payment Information</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label for="payment_method" class="form-label">Payment Method</label>
+                        <select class="form-select" id="payment_method" name="payment_method">
+                            <option value="cash">Cash</option>
+                            <option value="card">Card</option>
+                            <option value="upi">UPI</option>
+                            <option value="credit">Credit</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="payment_received" class="form-label">Amount Received</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" id="payment_received" name="payment_received" 
+                                   step="0.01" min="0" onchange="updateChange()">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Change</label>
+                        <div class="form-control-plaintext fw-bold" id="changeAmount">₹0.00</div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="round_up" name="round_up" onchange="updateChange()">
+                        <label class="form-check-label" for="round_up">Round cash payment up to the next rupee and save the difference as loyalty points</label>
+                    </div>
+                    <div class="mb-3">
+                        <label for="loyalty_points_redeemed" class="form-label">Redeem loyalty points</label>
+                        <input type="number" class="form-control" id="loyalty_points_redeemed" name="loyalty_points_redeemed" min="0" max="0" value="0" onchange="updateSaleTotal()">
+                        <small class="text-muted" id="loyaltyBalance">Select a customer to see available points. 1 point = ₹1.20.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sale Items -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h6><i class="fas fa-shopping-cart me-1"></i>Sale Items</h6>
+                </div>
+                <div class="card-body">
+                    <!-- Product Search -->
+                    <div class="mb-3">
+                        <label for="productSearch" class="form-label">Search Products</label>
+                        <div class="position-relative">
+                            <input type="text" class="form-control" id="productSearch" 
+                                   placeholder="Search by name, SKU, or barcode..." 
+                                   onkeyup="searchProducts(this.value)">
+                            <div id="productSearchResults" class="list-group position-absolute w-100" 
+                                 style="z-index: 1000; display: none;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sale Items Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="saleItemsTable">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Unit Price</th>
+                                    <th>Total</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Items will be added dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Sale Summary -->
+                    <div class="row">
+                        <div class="col-md-6 offset-md-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Subtotal:</strong></td>
+                                    <td class="text-end" id="subtotalAmount">₹0.00</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label for="discountAmount">Discount:</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               id="discountAmount" name="discount_amount" 
+                                               value="0" step="0.01" min="0" onchange="updateSaleTotal()">
+                                    </td>
+                                    <td class="text-end">₹<span id="discountDisplay">0.00</span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <label for="taxAmount">Tax:</label>
+                                        <input type="number" class="form-control form-control-sm" 
+                                               id="taxAmount" name="tax_amount" 
+                                               value="0" step="0.01" min="0" onchange="updateSaleTotal()">
+                                    </td>
+                                    <td class="text-end">₹<span id="taxDisplay">0.00</span></td>
+                                </tr>
+                                <tr class="table-dark">
+                                    <td><strong>Total:</strong></td>
+                                    <td class="text-end"><strong id="totalAmount">₹0.00</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Action Buttons -->
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'sales:sale_list' %}" class="btn btn-secondary">
+            <i class="fas fa-times me-1"></i>Cancel
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg">
+            <i class="fas fa-save me-1"></i>Complete Sale
+        </button>
+    </div>
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Update discount and tax display
+$('#discountAmount, #taxAmount').on('input', function() {
+    const id = $(this).attr('id');
+    const value = parseFloat($(this).val()) || 0;
+    const displayId = id.replace('Amount', 'Display');
+    $('#' + displayId).text(value.toFixed(2));
+    updateSaleTotal();
+});
+
+// Auto-focus on product search
+$(document).ready(function() {
+    $('#productSearch').focus();
+    
+    // Hide search results when clicking outside
+    $(document).click(function(e) {
+        if (!$(e.target).closest('#productSearch, #productSearchResults').length) {
+            $('#productSearchResults').hide();
+        }
+    });
+});
+
+// Keyboard shortcuts
+$(document).keydown(function(e) {
+    // F1 for product search
+    if (e.which === 112) {
+        e.preventDefault();
+        $('#productSearch').focus();
+    }
+    // F2 for payment received
+    if (e.which === 113) {
+        e.preventDefault();
+        $('#payment_received').focus();
+    }
+});
+</script>
+{% endblock %}

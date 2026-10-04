@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if product %}Edit Product{% else %}Add Product{% endif %} - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-box me-2"></i>
+        {% if product %}Edit Product{% else %}Add Product{% endif %}
+    </h2>
+    <a href="{% url 'products:product_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Products
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5>Product Information</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Product Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" 
+                                       value="{{ product.name|default:'' }}" required>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category *</label>
+                                <select class="form-select" id="category" name="category" required>
+                                    <option value="">Select Category</option>
+                                    {% for cat in categories %}
+                                    <option value="{{ cat.id }}" 
+                                            {% if product.category.id == cat.id %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="sku" class="form-label">SKU *</label>
+                                <input type="text" class="form-control" id="sku" name="sku" 
+                                       value="{{ product.sku|default:'' }}" required>
+                                <div class="form-text">Stock Keeping Unit - must be unique</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="barcode" class="form-label">Barcode</label>
+                                <input type="text" class="form-control" id="barcode" name="barcode" 
+                                       value="{{ product.barcode|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ product.description|default:'' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="price" class="form-label">Selling Price *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="price" name="price" 
+                                           value="{{ product.price|default:'' }}" step="0.01" min="0.01" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="cost_price" class="form-label">Cost Price</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control" id="cost_price" name="cost_price" 
+                                           value="{{ product.cost_price|default:'' }}" step="0.01" min="0">
+                                </div>
+                                <div class="form-text">For profit calculation</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="stock_quantity" class="form-label">Stock Quantity</label>
+                                <input type="number" class="form-control" id="stock_quantity" name="stock_quantity" 
+                                       value="{{ product.stock_quantity|default:'0' }}" min="0">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="low_stock_threshold" class="form-label">Low Stock Alert</label>
+                                <input type="number" class="form-control" id="low_stock_threshold" name="low_stock_threshold" 
+                                       value="{{ product.low_stock_threshold|default:'10' }}" min="0">
+                                <div class="form-text">Alert when stock goes below</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="unit" class="form-label">Unit</label>
+                                <input type="text" class="form-control" id="unit" name="unit" 
+                                       value="{{ product.unit|default:'pcs' }}" placeholder="pcs, kg, ltr, etc.">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="expiry_date" class="form-label">Expiry Date</label>
+                        <input type="date" class="form-control" id="expiry_date" name="expiry_date" 
+                               value="{% if product.expiry_date %}{{ product.expiry_date|date:'Y-m-d' }}{% endif %}">
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'products:product_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {% if product %}Update Product{% else %}Create Product{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Auto-generate SKU if creating new product
+    {% if not product %}
+    $('#name').on('input', function() {
+        const name = $(this).val();
+        if (name && !$('#sku').val()) {
+            const sku = name.replace(/\s+/g, '').toUpperCase().substring(0, 10) + 
+                       Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            $('#sku').val(sku);
+        }
+    });
+    {% endif %}
+    
+    // Calculate profit margin
+    function calculateProfitMargin() {
+        const price = parseFloat($('#price').val()) || 0;
+        const cost = parseFloat($('#cost_price').val()) || 0;
+        
+        if (cost > 0) {
+            const margin = ((price - cost) / cost * 100).toFixed(2);
+            $('#profitMargin').text(margin + '%');
+        } else {
+            $('#profitMargin').text('-');
+        }
+    }
+    
+    $('#price, #cost_price').on('input', calculateProfitMargin);
+    
+    // Add profit margin display
+    if ($('#cost_price').length) {
+        $('#cost_price').closest('.mb-3').append(
+            '<div class="form-text">Profit Margin: <span id="profitMargin">-</span></div>'
+        );
+        calculateProfitMargin();
+    }
+});
+</script>
+{% endblock %}

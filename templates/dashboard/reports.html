@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reports & Analytics - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <span class="tc-section-tag">STORE INSIGHTS</span>
+        <h2 class="mb-1">Reports & Analytics</h2>
+    </div>
+
+    <div>
+        <a href="{% url 'dashboard:analytics' %}" class="btn-pill btn-dark-pill">
+            <i class="fas fa-chart-line me-1"></i> Advanced Analytics
+        </a>
+    </div>
+</div>
+
+<!-- Date Range Filter Form -->
+<div class="tc-card mb-4">
+    <form method="get" class="row g-3 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-4">
+            <label for="date_from" class="form-label-custom">From Date</label>
+            <input type="date" class="form-control-custom" id="date_from" name="date_from" value="{{ date_from|date:'Y-m-d' }}">
+        </div>
+        <div class="col-md-4">
+            <label for="date_to" class="form-label-custom">To Date</label>
+            <input type="date" class="form-control-custom" id="date_to" name="date_to" value="{{ date_to|date:'Y-m-d' }}">
+        </div>
+        <div class="col-md-4 d-flex gap-2">
+            <button type="submit" class="btn-pill btn-dark-pill flex-grow-1">
+                <i class="fas fa-filter me-1"></i> Filter Period
+            </button>
+            <a href="{% url 'dashboard:reports' %}" class="btn-pill btn-outline-pill">Reset</a>
+        </div>
+    </form>
+</div>
+
+<!-- Summary Statistics Row -->
+<div class="kpi-grid-secondary mb-4">
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Total Period Sales</span>
+            <div class="kpi-icon text-success"><i class="fas fa-indian-rupee-sign"></i></div>
+        </div>
+        <div class="kpi-value fs-3">₹{{ sales_summary.total_sales|floatformat:2 }}</div>
+        <div class="kpi-subtext">{{ sales_summary.total_transactions }} transactions</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Total Period Expenses</span>
+            <div class="kpi-icon text-danger"><i class="fas fa-wallet"></i></div>
+        </div>
+        <div class="kpi-value fs-3 text-danger">₹{{ expense_summary.total_expenses|floatformat:2 }}</div>
+        <div class="kpi-subtext">{{ expense_summary.total_expense_entries }} expense records</div>
+    </div>
+
+    <div class="kpi-card">
+        <div class="kpi-header">
+            <span class="kpi-title">Net Operating Profit</span>
+            <div class="kpi-icon"><i class="fas fa-chart-pie"></i></div>
+        </div>
+        <div class="kpi-value fs-3 {% if profit < 0 %}text-danger{% else %}text-success{% endif %}">
+            ₹{{ profit|floatformat:2 }}
+        </div>
+        <div class="kpi-subtext">Sales minus store expenses</div>
+    </div>
+</div>
+
+<!-- Detailed Data Tables Grid -->
+<div class="tables-grid">
+    <!-- Top Product Performance -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">PRODUCTS</span>
+                <h4 class="mb-0">Top Product Performance</h4>
+            </div>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>Qty Sold</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in product_performance %}
+                    <tr>
+                        <td class="fw-bold">{{ item.product__name }}</td>
+                        <td>{{ item.total_quantity }}</td>
+                        <td class="fw-bold">₹{{ item.total_revenue|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">No sales data for this period.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Payment Methods Breakdown -->
+    <div class="tc-card">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div>
+                <span class="tc-section-tag mb-0">PAYMENTS</span>
+                <h4 class="mb-0">Payment Method Breakdown</h4>
+            </div>
+        </div>
+
+        <div class="tc-table-responsive">
+            <table class="tc-table">
+                <thead>
+                    <tr>
+                        <th>Method</th>
+                        <th>Count</th>
+                        <th>Total Volume</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pm in payment_methods %}
+                    <tr>
+                        <td class="fw-bold text-uppercase">{{ pm.payment_method }}</td>
+                        <td>{{ pm.count }}</td>
+                        <td class="fw-bold">₹{{ pm.total|floatformat:2 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">No payment records found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

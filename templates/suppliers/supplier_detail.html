@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Supplier Details - {{ supplier.name }} - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-truck me-2"></i>{{ supplier.name }}</h2>
+        <span class="badge {% if supplier.is_active %}bg-success{% else %}bg-danger{% endif %} fs-6 mt-1">
+            {% if supplier.is_active %}Active Supplier{% else %}Inactive Supplier{% endif %}
+        </span>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'suppliers:supplier_edit' supplier.id %}" class="btn btn-warning">
+            <i class="fas fa-edit me-1"></i>Edit Supplier
+        </a>
+        <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Suppliers
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-address-card me-2"></i>Contact & Address</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted fw-bold" style="width: 140px;">Contact Person:</td>
+                            <td>{{ supplier.contact_person|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Phone:</td>
+                            <td><a href="tel:{{ supplier.phone }}" class="text-decoration-none"><i class="fas fa-phone me-1 text-muted"></i>{{ supplier.phone }}</a></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Email:</td>
+                            <td>
+                                {% if supplier.email %}
+                                <a href="mailto:{{ supplier.email }}" class="text-decoration-none"><i class="fas fa-envelope me-1 text-muted"></i>{{ supplier.email }}</a>
+                                {% else %}
+                                N/A
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Address:</td>
+                            <td>{{ supplier.full_address }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-file-invoice-dollar me-2"></i>Financial & Terms</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted fw-bold" style="width: 140px;">Credit Limit:</td>
+                            <td class="fw-bold text-success">₹{{ supplier.credit_limit|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Credit Period:</td>
+                            <td>{{ supplier.credit_days }} Days</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">GST Number:</td>
+                            <td><code>{{ supplier.gst_number|default:"N/A" }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">PAN Number:</td>
+                            <td><code>{{ supplier.pan_number|default:"N/A" }}</code></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Bank Name:</td>
+                            <td>{{ supplier.bank_name|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">Account No:</td>
+                            <td>{{ supplier.account_number|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-bold">IFSC Code:</td>
+                            <td><code>{{ supplier.ifsc_code|default:"N/A" }}</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if supplier.notes %}
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-sticky-note me-2"></i>Notes</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0 text-secondary">{{ supplier.notes|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

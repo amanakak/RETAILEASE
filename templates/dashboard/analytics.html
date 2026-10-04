@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-chart-bar me-2"></i>Analytics</h2>
+    <a href="{% url 'dashboard:dashboard' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+    </a>
+</div>
+
+<!-- Sales Trend Chart -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-chart-line me-1"></i>Sales Trend (Last 30 Days)</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="salesTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Category Performance -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-tags me-1"></i>Category Performance</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Revenue</th>
+                                <th>Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for category in category_performance %}
+                            <tr>
+                                <td>{{ category.product__category__name }}</td>
+                                <td>₹{{ category.total_revenue|floatformat:2 }}</td>
+                                <td>{{ category.total_quantity }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">No data available</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Hourly Sales Pattern -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-clock me-1"></i>Hourly Sales Pattern</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if user.userprofile.is_admin %}
+<!-- Additional Analytics for Admin -->
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-percentage me-1"></i>Sales Distribution</h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" style="height: 250px;">
+                    <canvas id="salesDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle me-1"></i>Key Insights</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-lightbulb me-1"></i>Peak Hours</h6>
+                            <p class="mb-0">Most sales occur between 10 AM - 2 PM and 6 PM - 8 PM</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-star me-1"></i>Top Category</h6>
+                            <p class="mb-0">
+                                {% if category_performance.0 %}
+                                {{ category_performance.0.product__category__name }} leads with ₹{{ category_performance.0.total_revenue|floatformat:2 }}
+                                {% else %}
+                                No category data available
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-exclamation-triangle me-1"></i>Inventory Alert</h6>
+                            <p class="mb-0">Monitor low stock items to avoid stockouts</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-primary">
+                            <h6><i class="fas fa-chart-line me-1"></i>Growth Opportunity</h6>
+                            <p class="mb-0">Focus on promoting underperforming categories</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Chart data from backend
+    const salesTrendData = {{ sales_trend|safe }};
+    const hourlyPatternData = {{ hourly_pattern|safe }};
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Sales Trend Chart
+        const salesTrendCtx = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(salesTrendCtx, {
+            type: 'line',
+            data: {
+                labels: salesTrendData.map(item => {
+                    const date = new Date(item.date);
+                    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                }),
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: salesTrendData.map(item => item.total),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '₹' + value.toFixed(2);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Sales: ₹' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Hourly Pattern Chart
+        const hourlyCtx = document.getElementById('hourlyChart').getContext('2d');
+        new Chart(hourlyCtx, {
+            type: 'bar',
+            data: {
+                labels: Array.from({length: 24}, (_, i) => {
+                    const hour = i === 0 ? 12 : i > 12 ? i - 12 : i;
+                    const period = i < 12 ? 'AM' : 'PM';
+                    return `${hour} ${period}`;
+                }),
+                datasets: [{
+                    label: 'Hourly Sales',
+                    data: hourlyPatternData,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                    return '₹' + value.toFixed(0);
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Sales: ₹' + context.parsed.y.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Sales Distribution Chart (if admin)
+        {% if user.userprofile.is_admin %}
+        const distributionCtx = document.getElementById('salesDistributionChart');
+        if (distributionCtx) {
+            new Chart(distributionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ cat_labels_json|safe }},
+                    datasets: [{
+                        data: {{ cat_totals_json|safe }},
+                        backgroundColor: [
+                            'rgba(35, 56, 43, 0.8)',
+                            'rgba(83, 105, 87, 0.8)',
+                            'rgba(136, 195, 153, 0.8)',
+                            'rgba(192, 125, 20, 0.8)',
+                            'rgba(21, 24, 21, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ₹' + context.parsed.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        {% endif %}
+    });
+</script>
+{% endblock %}

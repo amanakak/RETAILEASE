@@ -1,0 +1,291 @@
+/* TrackCart Core Design System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+:root {
+  /* Color Palette */
+  --primary-dark: #151815;
+  --dark-green: #23382B;
+  --dark-green-hover: #1b2c22;
+  --muted-green: #536957;
+  --accent-green-light: #EBF1EC;
+  --soft-bg: #F4F4F1;
+  --white: #FFFFFF;
+  --card-bg: #FFFFFF;
+  --text-main: #171917;
+  --text-muted: #767A75;
+  --text-light: #A3A8A2;
+  --border-color: #E5E5E0;
+  --border-light: #F0F0EC;
+  
+  /* Status Colors */
+  --status-success: #2B7A4B;
+  --status-success-bg: #E8F5EE;
+  --status-warning: #C07D14;
+  --status-warning-bg: #FEF6E7;
+  --status-danger: #C93B2B;
+  --status-danger-bg: #FDF0EE;
+
+  /* Typography */
+  --font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  
+  /* Radii & Shadows */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+  
+  --shadow-sm: 0 2px 8px rgba(21, 24, 21, 0.04);
+  --shadow-md: 0 8px 24px rgba(21, 24, 21, 0.06);
+  --shadow-lg: 0 16px 40px rgba(21, 24, 21, 0.08);
+
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.25s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--soft-bg);
+  color: var(--text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Scale */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-main);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 { font-size: 2.75rem; }
+h2 { font-size: 2.125rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.1rem; }
+h6 { font-size: 0.95rem; }
+
+p {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+a {
+  color: var(--dark-green);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--primary-dark);
+}
+
+/* Pill Buttons */
+.btn-pill {
+  border-radius: var(--radius-pill);
+  padding: 0.65rem 1.4rem;
+  font-weight: 600;
+  font-size: 0.925rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-dark-pill {
+  background-color: var(--dark-green);
+  color: var(--white) !important;
+}
+
+.btn-dark-pill:hover {
+  background-color: var(--dark-green-hover);
+  box-shadow: 0 4px 14px rgba(35, 56, 43, 0.25);
+  transform: translateY(-1px);
+}
+
+.btn-outline-pill {
+  background-color: transparent;
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.btn-outline-pill:hover {
+  background-color: var(--white);
+  border-color: var(--text-main);
+  transform: translateY(-1px);
+}
+
+.btn-soft-pill {
+  background-color: var(--accent-green-light);
+  color: var(--dark-green);
+}
+
+.btn-soft-pill:hover {
+  background-color: #dbe7dd;
+  color: var(--primary-dark);
+}
+
+.btn-sm-pill {
+  padding: 0.4rem 1rem;
+  font-size: 0.85rem;
+}
+
+.btn-lg-pill {
+  padding: 0.85rem 1.8rem;
+  font-size: 1.05rem;
+}
+
+/* Form Controls */
+.form-control-custom {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--white);
+  color: var(--text-main);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.form-control-custom:focus {
+  outline: none;
+  border-color: var(--dark-green);
+  box-shadow: 0 0 0 4px var(--accent-green-light);
+}
+
+.form-label-custom {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.35rem;
+}
+
+/* Custom Cards */
+.tc-card {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.tc-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Status Badges */
+.tc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.775rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.tc-badge-success {
+  background-color: var(--status-success-bg);
+  color: var(--status-success);
+}
+
+.tc-badge-warning {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning);
+}
+
+.tc-badge-danger {
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger);
+}
+
+.tc-badge-neutral {
+  background-color: var(--soft-bg);
+  color: var(--text-muted);
+}
+
+/* Category Label Tag */
+.tc-section-tag {
+  display: inline-block;
+  font-size: 0.775rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-green);
+  margin-bottom: 0.75rem;
+}
+
+/* Custom Table Styles */
+.tc-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tc-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.tc-table th {
+  background-color: var(--soft-bg);
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.tc-table th:first-child {
+  border-top-left-radius: var(--radius-sm);
+}
+
+.tc-table th:last-child {
+  border-top-right-radius: var(--radius-sm);
+}
+
+.tc-table td {
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 0.925rem;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.tc-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tc-table tr:hover td {
+  background-color: #FAFAFA;
+}
+
+/* Utility spacing */
+.mt-1 { margin-top: 0.25rem; }
+.mt-2 { margin-top: 0.5rem; }
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mt-5 { margin-top: 2.5rem; }
+.mb-1 { margin-bottom: 0.25rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mb-4 { margin-bottom: 1.5rem; }
+.mb-5 { margin-bottom: 2.5rem; }

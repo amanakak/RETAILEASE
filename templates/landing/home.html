@@ -1,0 +1,302 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}RetailEase - Modern Inventory & Sales Management System{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/landing.css">
+{% endblock %}
+
+{% block content %}
+<div class="landing-body">
+    <!-- Navbar /AXION style -->
+    <nav class="landing-nav">
+        <div class="container">
+            <a href="{% url 'home' %}" class="brand-slash-logo">
+                /RETAILEASE
+            </a>
+            
+            <ul class="nav-links">
+                <li><a href="#home">About us</a></li>
+                <li><a href="#solutions">Services</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#technology">Technology</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard:dashboard' %}" class="btn-pill btn-dark-pill">
+                    <i class="fas fa-chart-pie me-1"></i> Dashboard
+                </a>
+                {% else %}
+                <a href="#about" class="btn-pill btn-dark-pill">Contact Us</a>
+                <a href="{% url 'authentication:login' %}" class="btn-pill btn-outline-pill">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section (Reference Image 1 Left) -->
+    <section id="home" class="hero-section">
+        <div class="container">
+            <div class="hero-top-row">
+                <div>
+                    <span class="slash-tag">/RETAIL MANAGEMENT</span>
+                    <h1 class="hero-headline">Let's Run Your<br>Store Smarter</h1>
+                </div>
+
+                <div class="hero-subtext-box">
+                    <p>We provide reliable inventory and POS solutions wherever you need it. With us, you get precision, speed, and confidence at every step of your store operations.</p>
+                    <a href="{% url 'authentication:login' %}" class="btn-pill btn-dark-pill">
+                        Learn More
+                    </a>
+                </div>
+            </div>
+
+            <!-- Wide Cinematic Hero Photo Container -->
+            <div class="hero-container-media">
+                <img src="/static/images/hero_inventory.jpg" alt="TrackCart Supermarket Inventory Management">
+            </div>
+        </div>
+    </section>
+
+    <!-- Retail Solutions Section (Reference Image 1 Right: 5-Card Grid) -->
+    <section id="solutions" class="landing-section">
+        <div class="container">
+            <div class="solutions-header-row">
+                <div>
+                    <span class="slash-tag">/SOLUTIONS</span>
+                    <h2>Retail Solutions</h2>
+                </div>
+                <div>
+                    <a href="{% url 'authentication:login' %}" class="btn-pill btn-dark-pill">See All</a>
+                </div>
+            </div>
+
+            <div class="solutions-grid-5">
+                <!-- Card 1: Wide Top Left -->
+                <div class="solution-img-card grid-card-wide-top">
+                    <img src="/static/images/hero_inventory.jpg" alt="Real-Time Inventory Control">
+                    <div class="solution-img-overlay">
+                        <h4>Real-Time Inventory Control</h4>
+                        <p>Track stock levels, categories, SKU, and barcode information instantly across all store aisles.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Tall Top Right -->
+                <div class="solution-img-card grid-card-tall-top">
+                    <img src="/static/images/pos_system.jpg" alt="Point of Sale & Billing">
+                    <div class="solution-img-overlay">
+                        <h4>Point of Sale & Billing</h4>
+                        <p>Process purchases quickly with cash, card, UPI or credit payments and print instant receipts.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: Wide Bottom Left -->
+                <div class="solution-img-card grid-card-wide-bottom">
+                    <img src="/static/images/inventory_mgmt.jpg" alt="Stock Monitoring & Alerts">
+                    <div class="solution-img-overlay">
+                        <h4>Stock Monitoring & Alerts</h4>
+                        <p>Monitor stock movement history and receive automated low-stock threshold notifications.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: Small Bottom Middle -->
+                <div class="solution-img-card grid-card-small-1">
+                    <img src="/static/images/sales_analytics.jpg" alt="Sales Analytics">
+                    <div class="solution-img-overlay">
+                        <h4>Sales Analytics & Profit</h4>
+                        <p>Understand revenue trends, expenses, and top-performing items.</p>
+                    </div>
+                </div>
+
+                <!-- Card 5: Small Bottom Right -->
+                <div class="solution-img-card grid-card-small-2">
+                    <img src="/static/images/retail_shelves.jpg" alt="Supplier & Expense Logs">
+                    <div class="solution-img-overlay">
+                        <h4>Supplier & Expense Logs</h4>
+                        <p>Maintain detailed supplier directories and store operating cost records.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Workflow Section -->
+    <section id="how-it-works" class="landing-section">
+        <div class="container">
+            <div class="industries-header-row">
+                <div>
+                    <span class="slash-tag">/HOW IT WORKS</span>
+                    <h2>Simple Store Management,<br>From Stock to Sale</h2>
+                </div>
+                <div class="industries-header-right">
+                    <p>TrackCart connects inventory, sales, staff, expenses, and reports into one simple workflow, helping the shop owner manage daily store operations efficiently.</p>
+                </div>
+            </div>
+
+            <div class="industries-grid-4">
+                <!-- Card 1: White bg -->
+                <div class="industry-card">
+                    <div>
+                        <div class="industry-icon-circle">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <h4>Add Products & Stock</h4>
+                        <p>Admin adds products, categories, SKU, barcode, prices, and available stock.</p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Highlighted Dark Green bg (#23382B) -->
+                <div class="industry-card highlighted">
+                    <div>
+                        <div class="industry-icon-circle">
+                            <i class="fas fa-boxes-stacked"></i>
+                        </div>
+                        <h4>Manage Inventory</h4>
+                        <p>Monitor stock quantities, supplier details, stock movements, and low-stock alerts.</p>
+                    </div>
+                </div>
+
+                <!-- Card 3: White bg -->
+                <div class="industry-card">
+                    <div>
+                        <div class="industry-icon-circle">
+                            <i class="fas fa-cash-register"></i>
+                        </div>
+                        <h4>Process Sales</h4>
+                        <p>Staff uses the POS to select products, calculate the bill, choose a payment method, and complete the sale.</p>
+                    </div>
+                </div>
+
+                <!-- Card 4: White bg -->
+                <div class="industry-card">
+                    <div>
+                        <div class="industry-icon-circle">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4>Track & Analyze</h4>
+                        <p>TrackCart automatically updates stock after sales and allows the Admin to monitor sales, expenses, and reports.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technology Section (Reference Image 2 Right: 2x2 Grid + Photo) -->
+    <section id="technology" class="landing-section">
+        <div class="container">
+            <div class="tech-header-row">
+                <div>
+                    <span class="slash-tag">/TECHNOLOGY</span>
+                    <h2>Innovation that Powers<br>Your Store</h2>
+                </div>
+                <div>
+                    <p class="text-muted">We leverage the latest technology to improve the way you manage your store products, POS billing, and business operations.</p>
+                </div>
+            </div>
+
+            <div class="tech-grid-main">
+                <!-- Left: Tall photo container -->
+                <div class="tech-photo-card">
+                    <img src="/static/images/inventory_mgmt.jpg" alt="TrackCart Technology">
+                </div>
+
+                <!-- Right: 2x2 Feature Blocks Grid -->
+                <div class="tech-blocks-grid">
+                    <div class="tech-block-item">
+                        <div>
+                            <h4>Real-Time Stock Alerts</h4>
+                            <p>Stay up-to-date with your stock levels from receiving shipments up to daily shelf sales.</p>
+                        </div>
+                        <a href="{% url 'authentication:login' %}" class="tech-action-link">
+                            <span>Learn More</span>
+                            <span class="btn-arrow-small"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+
+                    <div class="tech-block-item">
+                        <div>
+                            <h4>Data Analytics & Insights</h4>
+                            <p>Gain insights into your revenue, identify top products, and make data-driven store decisions.</p>
+                        </div>
+                        <a href="{% url 'authentication:login' %}" class="tech-action-link">
+                            <span>Learn More</span>
+                            <span class="btn-arrow-small"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+
+                    <div class="tech-block-item">
+                        <div>
+                            <h4>Automated POS Billing</h4>
+                            <p>Receive instant calculation of items, taxes, discounts, and print change receipts seamlessly.</p>
+                        </div>
+                        <a href="{% url 'authentication:login' %}" class="tech-action-link">
+                            <span>Learn More</span>
+                            <span class="btn-arrow-small"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+
+                    <div class="tech-block-item">
+                        <div>
+                            <h4>Role-Based Security Portal</h4>
+                            <p>Access your account anytime with our secure role portal for Admin oversight and Staff billing.</p>
+                        </div>
+                        <a href="{% url 'authentication:login' %}" class="tech-action-link">
+                            <span>Learn More</span>
+                            <span class="btn-arrow-small"><i class="fas fa-arrow-right"></i></span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="about" class="landing-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="{% url 'home' %}" class="brand-slash-logo mb-3 d-inline-block">
+                        /TRACKCART
+                    </a>
+                    <p>Modern inventory and sales management system for growing retail businesses, supermarkets, and grocery stores.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Product</h5>
+                    <ul>
+                        <li><a href="#solutions">Services</a></li>
+                        <li><a href="#industries">Our Approach</a></li>
+                        <li><a href="#technology">Technology</a></li>
+                        <li><a href="{% url 'authentication:login' %}">Point of Sale</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Modules</h5>
+                    <ul>
+                        <li><a href="{% url 'authentication:login' %}">Inventory Control</a></li>
+                        <li><a href="{% url 'authentication:login' %}">Supplier Logs</a></li>
+                        <li><a href="{% url 'authentication:login' %}">Expense Tracking</a></li>
+                        <li><a href="{% url 'authentication:login' %}">Sales Analytics</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h5>Access</h5>
+                    <ul>
+                        <li><a href="{% url 'authentication:login' %}">Admin Login</a></li>
+                        <li><a href="{% url 'authentication:login' %}">Staff Login</a></li>
+                        <li><a href="{% url 'home' %}">Back to Top</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                &copy; 2026 RetailEase Inventory Management System.
+            </div>
+        </div>
+    </footer>
+</div>
+{% endblock %}

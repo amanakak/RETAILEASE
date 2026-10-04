@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Monthly Expense Analysis - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2><i class="fas fa-calendar-alt me-2"></i>Monthly Expense Analysis</h2>
+        <p class="text-muted mb-0">Overview for {{ current_month }}</p>
+    </div>
+    <a href="{% url 'expenses:expense_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Expenses
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm text-center py-3">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase fw-bold mb-2">Total Monthly Expenditure</h6>
+                <h2 class="display-6 fw-bold text-danger mb-0">₹{{ total_monthly|floatformat:2 }}</h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card shadow-sm text-center py-3">
+            <div class="card-body">
+                <h6 class="text-muted text-uppercase fw-bold mb-2">Recorded Transactions</h6>
+                <h2 class="display-6 fw-bold text-primary mb-0">{{ monthly_expenses|length }}</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-receipt me-2"></i>Recent Monthly Expenses</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in monthly_expenses %}
+                            <tr>
+                                <td>{{ exp.expense_date|date:"M d" }}</td>
+                                <td><strong>{{ exp.title }}</strong></td>
+                                <td><span class="badge bg-light text-dark">{{ exp.category.name }}</span></td>
+                                <td class="fw-bold text-danger">₹{{ exp.amount|floatformat:2 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-4">No expenses recorded for this month</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white py-3">
+                <h5 class="card-title mb-0 text-primary"><i class="fas fa-chart-pie me-2"></i>Category Breakdown</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for cat in category_breakdown %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center py-3 border-0 border-bottom">
+                        <div>
+                            <span class="fw-bold">{{ cat.category__name }}</span>
+                        </div>
+                        <span class="badge bg-danger rounded-pill fs-6">₹{{ cat.total|floatformat:2 }}</span>
+                    </li>
+                    {% empty %}
+                    <li class="list-group-item text-center text-muted py-4">No categories data</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

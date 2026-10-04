@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+
+{% block title %}Sale {{ sale.sale_number }} - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-receipt me-2"></i>Sale {{ sale.sale_number }}</h2>
+    <div>
+        <a href="{% url 'sales:sale_receipt' sale.id %}" class="btn btn-success" target="_blank">
+            <i class="fas fa-print me-1"></i>Print Receipt
+        </a>
+        <a href="{% url 'sales:sale_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Sales
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- Sale Items -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-shopping-cart me-1"></i>Sale Items</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in sale.items.all %}
+                            <tr>
+                                <td>
+                                    <strong>{{ item.product.name }}</strong><br>
+                                    <small class="text-muted">SKU: {{ item.product.sku }}</small>
+                                </td>
+                                <td>{{ item.quantity }} {{ item.product.unit }}</td>
+                                <td>₹{{ item.unit_price }}</td>
+                                <td><strong>₹{{ item.total_price }}</strong></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <td colspan="3"><strong>Subtotal:</strong></td>
+                                <td><strong>₹{{ sale.subtotal }}</strong></td>
+                            </tr>
+                            {% if sale.discount_amount > 0 %}
+                            <tr class="table-light">
+                                <td colspan="3"><strong>Discount:</strong></td>
+                                <td><strong>-₹{{ sale.discount_amount }}</strong></td>
+                            </tr>
+                            {% endif %}
+                            {% if sale.tax_amount > 0 %}
+                            <tr class="table-light">
+                                <td colspan="3"><strong>Tax:</strong></td>
+                                <td><strong>₹{{ sale.tax_amount }}</strong></td>
+                            </tr>
+                            {% endif %}
+                            <tr class="table-success">
+                                <td colspan="3"><strong>TOTAL:</strong></td>
+                                <td><strong>₹{{ sale.total_amount }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Sale Information -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle me-1"></i>Sale Information</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <td><strong>Sale Number:</strong></td>
+                        <td>{{ sale.sale_number }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date & Time:</strong></td>
+                        <td>{{ sale.created_at|date:"M d, Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Cashier:</strong></td>
+                        <td>{{ sale.created_by.get_full_name|default:sale.created_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Customer:</strong></td>
+                        <td>{{ sale.customer_name|default:"Walk-in Customer" }}</td>
+                    </tr>
+                    {% if sale.customer_phone %}
+                    <tr>
+                        <td><strong>Phone:</strong></td>
+                        <td>{{ sale.customer_phone }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if sale.customer_email %}
+                    <tr>
+                        <td><strong>Email:</strong></td>
+                        <td>{{ sale.customer_email }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <!-- Payment Information -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-credit-card me-1"></i>Payment Information</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <td><strong>Payment Method:</strong></td>
+                        <td>
+                            <span class="badge bg-{% if sale.payment_method == 'cash' %}success{% elif sale.payment_method == 'card' %}primary{% elif sale.payment_method == 'upi' %}info{% else %}warning{% endif %}">
+                                {{ sale.get_payment_method_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Amount Received:</strong></td>
+                        <td>₹{{ sale.payment_received }}</td>
+                    </tr>
+                    {% if sale.change_amount > 0 %}
+                    <tr>
+                        <td><strong>Change Given:</strong></td>
+                        <td><span class="text-success">₹{{ sale.change_amount }}</span></td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        {% if sale.notes %}
+        <!-- Notes -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-sticky-note me-1"></i>Notes</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ sale.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Actions -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-bolt me-1"></i>Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'sales:sale_receipt' sale.id %}" class="btn btn-success" target="_blank">
+                        <i class="fas fa-print me-1"></i>Print Receipt
+                    </a>
+                    <a href="{% url 'sales:sale_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>New Sale
+                    </a>
+                    <button type="button" class="btn btn-secondary" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left me-1"></i>Go Back
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

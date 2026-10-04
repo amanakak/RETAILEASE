@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if supplier %}Edit Supplier{% else %}Add Supplier{% endif %} - TrackCart{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-truck me-2"></i>
+        {% if supplier %}Edit Supplier: {{ supplier.name }}{% else %}Add New Supplier{% endif %}
+    </h2>
+    <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-1"></i>Back to Suppliers
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            
+            <h5 class="text-primary mb-3"><i class="fas fa-building me-2"></i>Basic Information</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="name" class="form-label">Supplier / Business Name *</label>
+                    <input type="text" class="form-control" id="name" name="name" value="{{ supplier.name|default:'' }}" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="contact_person" class="form-label">Contact Person</label>
+                    <input type="text" class="form-control" id="contact_person" name="contact_person" value="{{ supplier.contact_person|default:'' }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">Phone Number *</label>
+                    <input type="text" class="form-control" id="phone" name="phone" value="{{ supplier.phone|default:'' }}" required placeholder="+919876543210">
+                </div>
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Email Address</label>
+                    <input type="email" class="form-control" id="email" name="email" value="{{ supplier.email|default:'' }}">
+                </div>
+            </div>
+
+            <h5 class="text-primary mb-3"><i class="fas fa-map-marker-alt me-2"></i>Address & Location</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <label for="address" class="form-label">Street Address *</label>
+                    <textarea class="form-control" id="address" name="address" rows="2" required>{{ supplier.address|default:'' }}</textarea>
+                </div>
+                <div class="col-md-4">
+                    <label for="city" class="form-label">City *</label>
+                    <input type="text" class="form-control" id="city" name="city" value="{{ supplier.city|default:'' }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="state" class="form-label">State</label>
+                    <input type="text" class="form-control" id="state" name="state" value="{{ supplier.state|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="pincode" class="form-label">Pincode / Postal Code</label>
+                    <input type="text" class="form-control" id="pincode" name="pincode" value="{{ supplier.pincode|default:'' }}">
+                </div>
+            </div>
+
+            <h5 class="text-primary mb-3"><i class="fas fa-file-invoice-dollar me-2"></i>Tax & Bank Details</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="gst_number" class="form-label">GST Number</label>
+                    <input type="text" class="form-control" id="gst_number" name="gst_number" value="{{ supplier.gst_number|default:'' }}" placeholder="22AAAAA0000A1Z5">
+                </div>
+                <div class="col-md-6">
+                    <label for="pan_number" class="form-label">PAN Number</label>
+                    <input type="text" class="form-control" id="pan_number" name="pan_number" value="{{ supplier.pan_number|default:'' }}" placeholder="ABCDE1234F">
+                </div>
+                <div class="col-md-4">
+                    <label for="bank_name" class="form-label">Bank Name</label>
+                    <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ supplier.bank_name|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="account_number" class="form-label">Account Number</label>
+                    <input type="text" class="form-control" id="account_number" name="account_number" value="{{ supplier.account_number|default:'' }}">
+                </div>
+                <div class="col-md-4">
+                    <label for="ifsc_code" class="form-label">IFSC Code</label>
+                    <input type="text" class="form-control" id="ifsc_code" name="ifsc_code" value="{{ supplier.ifsc_code|default:'' }}">
+                </div>
+            </div>
+
+            <h5 class="text-primary mb-3"><i class="fas fa-hand-holding-usd me-2"></i>Credit Terms & Notes</h5>
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label for="credit_limit" class="form-label">Credit Limit (₹)</label>
+                    <input type="number" step="0.01" class="form-control" id="credit_limit" name="credit_limit" value="{{ supplier.credit_limit|default:'0.00' }}">
+                </div>
+                <div class="col-md-6">
+                    <label for="credit_days" class="form-label">Credit Days</label>
+                    <input type="number" class="form-control" id="credit_days" name="credit_days" value="{{ supplier.credit_days|default:'0' }}">
+                </div>
+                <div class="col-12">
+                    <label for="notes" class="form-label">Internal Notes</label>
+                    <textarea class="form-control" id="notes" name="notes" rows="3">{{ supplier.notes|default:'' }}</textarea>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                <a href="{% url 'suppliers:supplier_list' %}" class="btn btn-light">Cancel</a>
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save me-1"></i>{% if supplier %}Update Supplier{% else %}Save Supplier{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

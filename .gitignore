@@ -1,0 +1,33 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Django generated files
+*.log
+staticfiles/
+media/
+
+# Local database and environment secrets
+db.sqlite3
+.env
+.env.*
+!.env.example
+
+# IDE and operating-system files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Test and coverage output
+.pytest_cache/
+.coverage
+htmlcov/
